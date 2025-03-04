@@ -1,0 +1,8 @@
+langchain
+langchain-openai
+tqdm
+dotenv
+pydantic
+pandas
+seaborn
+folium
