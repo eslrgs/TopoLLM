@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "topollm"
+version = "0.1.0"
+description = ""
+authors = ["eslrgs"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+langchain = "^0.3.21"
+langchain-community = "^0.3.20"
+langchain-openai = "^0.3.9"
+tqdm = "^4.67.1"
+dotenv = "^0.9.9"
+pydantic = "^2.10.6"
+pandas = "^2.2.3"
+seaborn = "^0.13.2"
+folium = "^0.19.5"
+ipykernel = "^6.24.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
