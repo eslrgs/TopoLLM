@@ -150,7 +150,7 @@ def save_map(df: pd.DataFrame, output_path: str = "output/topollm_map.html") -> 
     m.save(output_path)
     logging.info(f"Map saved to {output_path}")
 
-def main(sample_size: int = 10, input_file: str = "data/IPN_GB_2024.csv", 
+def main(sample_size: int = 100, input_file: str = "data/IPN_GB_2024.csv", 
          output_file: str = "output/IPN_GB_2024_origin.csv") -> None:
     """Loads data, processes it, and saves results.
     
@@ -185,11 +185,12 @@ def main(sample_size: int = 10, input_file: str = "data/IPN_GB_2024.csv",
         
         # Process place names with progress bar
         logging.info("Processing place names...")
-        tqdm.pandas(desc="Analyzing origins")
-        df[['origin', 'reason', 'confidence']] = df[['placesort', 'cty23nm']].progress_apply(
-            lambda row: pd.Series(process_place_name(row['placesort'], row['cty23nm'])), 
-            axis=1
-        )
+        results = []
+        for _, row in tqdm(df.iterrows(), total=len(df), desc="Analyzing origins"):
+            result = process_place_name(row['placesort'], row['cty23nm'])
+            results.append(result)
+        
+        df[['origin', 'reason', 'confidence']] = pd.DataFrame(results)
         
         # Create output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
