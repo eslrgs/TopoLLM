@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_7373e9819760df17f5908dcbc713619c {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+    <div style="position: fixed; 
+                bottom: 50px; left: 50px; width: 150px; height: 180px; 
+                background-color: white; border:2px solid grey; z-index:9999; 
+                font-size:14px; padding: 10px">
+    <p><b>Place Name Origins</b></p>
+    <p><i class="fa fa-circle" style="color:green"></i> Scottish Gaelic</p><p><i class="fa fa-circle" style="color:red"></i> Norse</p><p><i class="fa fa-circle" style="color:blue"></i> Scots</p><p><i class="fa fa-circle" style="color:purple"></i> English</p><p><i class="fa fa-circle" style="color:black"></i> Brittonic</p><p><i class="fa fa-circle" style="color:orange"></i> Unsure</p><p><i class="fa fa-circle" style="color:gray"></i> Error</p></div>
+    
+            <div class="folium-map" id="map_7373e9819760df17f5908dcbc713619c" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_7373e9819760df17f5908dcbc713619c = L.map(
+                "map_7373e9819760df17f5908dcbc713619c",
+                {
+                    center: [56.6682043, -4.500053899999999],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 6,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_84716696c822c84434b3c92c26b80afd = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_84716696c822c84434b3c92c26b80afd.addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var marker_51d2235b6adb56df0ef6a8cbb047385e = L.marker(
+                [57.983192, -5.27525],
+                {
+}
+            ).addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var icon_5d8766c2aecc7a90d074df4c9b8a7750 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_4e63b8c82c5bedc1428e04f4741d9615 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_c71bd58bdbd644c8fe461883a67ef783 = $(`<div id="html_c71bd58bdbd644c8fe461883a67ef783" style="width: 100.0%; height: 100.0%;"><b>Culnacraig</b><br>Origin: Scottish Gaelic<br>Reason: Culnacraig is clearly derived from Scottish Gaelic elements: 'Cùl' meaning 'back' or 'behind', 'na' being the Gaelic definite article 'of the', and 'craig' from 'creag' meaning 'rock' or 'crag'. Together it means 'back of the rock/crag'. This follows a common Gaelic naming pattern where landscape features are described in relation to each other. The presence of the Gaelic article 'na' is particularly diagnostic of Gaelic origin, and the word order follows Gaelic syntax. The spelling 'craig' instead of 'creag' represents a common Anglicization of the Gaelic term.</div>`)[0];
+                popup_4e63b8c82c5bedc1428e04f4741d9615.setContent(html_c71bd58bdbd644c8fe461883a67ef783);
+            
+        
+
+        marker_51d2235b6adb56df0ef6a8cbb047385e.bindPopup(popup_4e63b8c82c5bedc1428e04f4741d9615)
+        ;
+
+        
+    
+    
+                marker_51d2235b6adb56df0ef6a8cbb047385e.setIcon(icon_5d8766c2aecc7a90d074df4c9b8a7750);
+            
+    
+            var marker_f9476ac97816a0c5442c4f80c4f065a1 = L.marker(
+                [56.15013, -3.887905],
+                {
+}
+            ).addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var icon_dc4e826714f9fadab112502a30660a0f = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_0444a465facdae6afb85d4cf761b8b65 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_bc34d036d5ab0128c01f6c68a09d8ca9 = $(`<div id="html_bc34d036d5ab0128c01f6c68a09d8ca9" style="width: 100.0%; height: 100.0%;"><b>Blairlogie</b><br>Origin: Scottish Gaelic<br>Reason: Blairlogie is a compound name where 'Blair-' comes from Scottish Gaelic 'blàr' meaning 'plain, field, or battlefield'. The second element 'logie' derives from Gaelic 'lagan' or 'lag' meaning 'hollow'. This naming pattern is very common in Scottish toponymy, particularly in central Scotland where Gaelic was historically spoken. The combination describes a field or plain in a hollow, which is consistent with the topographical naming patterns of Gaelic place names. The preservation of 'blair' as a prefix is particularly diagnostic of Gaelic origin, as it's one of the most reliable Gaelic toponymic elements in Scottish place names.</div>`)[0];
+                popup_0444a465facdae6afb85d4cf761b8b65.setContent(html_bc34d036d5ab0128c01f6c68a09d8ca9);
+            
+        
+
+        marker_f9476ac97816a0c5442c4f80c4f065a1.bindPopup(popup_0444a465facdae6afb85d4cf761b8b65)
+        ;
+
+        
+    
+    
+                marker_f9476ac97816a0c5442c4f80c4f065a1.setIcon(icon_dc4e826714f9fadab112502a30660a0f);
+            
+    
+            var marker_9cb7e756d6d25f39ad81396f4e4c989e = L.marker(
+                [55.775848, -3.705091],
+                {
+}
+            ).addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var icon_9ecc371c0f2d9d231d062d7e4f82b9dc = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "purple",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_ca7b5f0859aca840d6ed2c679f8967be = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_08b2b550f45a1f4d90a728865199de13 = $(`<div id="html_08b2b550f45a1f4d90a728865199de13" style="width: 100.0%; height: 100.0%;"><b>Greenwall</b><br>Origin: English<br>Reason: Greenwall appears to be a straightforward English compound name combining 'green' (from Old English 'grene') and 'wall' (from Old English 'weall'). This type of descriptive place name formation is common in English toponymy, likely referring to a wall or structure that was either covered in vegetation or situated in a verdant area. The elements are transparently English with no phonological alterations suggesting Scots influence, and the compound structure doesn't match patterns found in Celtic or Norse place names.</div>`)[0];
+                popup_ca7b5f0859aca840d6ed2c679f8967be.setContent(html_08b2b550f45a1f4d90a728865199de13);
+            
+        
+
+        marker_9cb7e756d6d25f39ad81396f4e4c989e.bindPopup(popup_ca7b5f0859aca840d6ed2c679f8967be)
+        ;
+
+        
+    
+    
+                marker_9cb7e756d6d25f39ad81396f4e4c989e.setIcon(icon_9ecc371c0f2d9d231d062d7e4f82b9dc);
+            
+    
+            var marker_25780658968040a4e07a20ffd6c8159b = L.marker(
+                [55.785749, -4.164618],
+                {
+}
+            ).addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var icon_d26809d46021dfe1a61008caeefabb37 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_ad525b45585870a40a5d9fa4adf366b7 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_a3be91c5c05814583e561ba54b6ac9a2 = $(`<div id="html_a3be91c5c05814583e561ba54b6ac9a2" style="width: 100.0%; height: 100.0%;"><b>Nerston</b><br>Origin: Scots<br>Reason: Nerston appears to be a Scots formation, likely consisting of a personal name 'Ner' or 'Near' combined with the common Scots/English suffix '-ton' meaning 'farm' or 'settlement'. The '-ton' suffix is a widespread Germanic toponymic element found throughout Scotland, particularly in areas of Anglo-Saxon influence. The first element might be derived from a personal name or possibly from Middle Scots 'near/ner' meaning 'closer/nearer', potentially indicating its relative position to another settlement. Without historical forms or specific geographic context, a higher confidence rating isn't warranted.</div>`)[0];
+                popup_ad525b45585870a40a5d9fa4adf366b7.setContent(html_a3be91c5c05814583e561ba54b6ac9a2);
+            
+        
+
+        marker_25780658968040a4e07a20ffd6c8159b.bindPopup(popup_ad525b45585870a40a5d9fa4adf366b7)
+        ;
+
+        
+    
+    
+                marker_25780658968040a4e07a20ffd6c8159b.setIcon(icon_d26809d46021dfe1a61008caeefabb37);
+            
+    
+            var marker_fba5a652d2f82130b9bb1d7fbf260138 = L.marker(
+                [56.203219, -3.212997],
+                {
+}
+            ).addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var icon_db42956451f2917b8b81dc44ee3babca = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2c9517703434b40836f41b4033e8a8b4 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_279b1d8840ac977bc6b953910af1207b = $(`<div id="html_279b1d8840ac977bc6b953910af1207b" style="width: 100.0%; height: 100.0%;"><b>Croft Outerly</b><br>Origin: Scots<br>Reason: The place name 'Croftouterly' appears to be a compound formation with 'Croft-' as the first element, which is common in Scots toponymy, deriving from Old English 'croft' meaning a small enclosed field or farm. The second element '-outerly' likely relates to Scots 'outer' or 'utter' meaning outside or remote, with an adjectival suffix '-ly'. The combination suggests a farm or enclosed field that was situated in an outer or peripheral location. However, without historical forms or precise geographic context, the confidence level remains medium.</div>`)[0];
+                popup_2c9517703434b40836f41b4033e8a8b4.setContent(html_279b1d8840ac977bc6b953910af1207b);
+            
+        
+
+        marker_fba5a652d2f82130b9bb1d7fbf260138.bindPopup(popup_2c9517703434b40836f41b4033e8a8b4)
+        ;
+
+        
+    
+    
+                marker_fba5a652d2f82130b9bb1d7fbf260138.setIcon(icon_db42956451f2917b8b81dc44ee3babca);
+            
+    
+            var marker_2f94be98793458146cc7da9ae46cdb67 = L.marker(
+                [58.292222, -6.779846],
+                {
+}
+            ).addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var icon_99fc71e117eeb25251ed371a14d8ff90 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_bf9bc54ca8bbec8078ae3a8a400db5df = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_cb4afcf74b981a7accb490573db8ab89 = $(`<div id="html_cb4afcf74b981a7accb490573db8ab89" style="width: 100.0%; height: 100.0%;"><b>Garenin</b><br>Origin: Norse<br>Reason: Garenin (also known as Gearrannan) appears to be of Norse origin. The name comes from Old Norse 'gerði' (enclosure) with the Norse diminutive suffix '-in'. This pattern is common in Western Isles toponymy where Norse settlement was extensive. The location in the Western Isles (Lewis) where Norse influence was particularly strong, combined with the characteristic Norse name structure and the historical context of Norse settlement in this region, strongly supports this etymology. The alternative Gaelic form 'Gearrannan' represents a Gaelicization of the original Norse name.</div>`)[0];
+                popup_bf9bc54ca8bbec8078ae3a8a400db5df.setContent(html_cb4afcf74b981a7accb490573db8ab89);
+            
+        
+
+        marker_2f94be98793458146cc7da9ae46cdb67.bindPopup(popup_bf9bc54ca8bbec8078ae3a8a400db5df)
+        ;
+
+        
+    
+    
+                marker_2f94be98793458146cc7da9ae46cdb67.setIcon(icon_99fc71e117eeb25251ed371a14d8ff90);
+            
+    
+            var marker_f038d3877108cb38a3ed16b907539d21 = L.marker(
+                [56.197771, -3.26361],
+                {
+}
+            ).addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var icon_c8e4822b9d465cab4f9c733dbdf11bbe = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_599461b610971903944278f0a4041580 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_6b57e6fc15083ef3082c77a30b154ae1 = $(`<div id="html_6b57e6fc15083ef3082c77a30b154ae1" style="width: 100.0%; height: 100.0%;"><b>Auchmuirbridge</b><br>Origin: Scots<br>Reason: Auchmuirbridge is a compound name with clear Scots elements: 'Auch-' (from Gaelic 'achadh' meaning field, but commonly adopted into Scots), 'muir' (Scots word for moorland or heath), and 'bridge' (straightforward English/Scots element). The combination follows typical Scots naming patterns where Gaelic elements were adapted into Scots and combined with Germanic elements. The 'muir' element is particularly characteristic of Scots rather than standard English (which would use 'moor'), and its combination with 'bridge' is a typical Scots formation for describing a crossing over moorland.</div>`)[0];
+                popup_599461b610971903944278f0a4041580.setContent(html_6b57e6fc15083ef3082c77a30b154ae1);
+            
+        
+
+        marker_f038d3877108cb38a3ed16b907539d21.bindPopup(popup_599461b610971903944278f0a4041580)
+        ;
+
+        
+    
+    
+                marker_f038d3877108cb38a3ed16b907539d21.setIcon(icon_c8e4822b9d465cab4f9c733dbdf11bbe);
+            
+    
+            var marker_b005e4e6bb008f06a7db817037391745 = L.marker(
+                [55.698623, -2.86391],
+                {
+}
+            ).addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var icon_e5984b12f3cbd155319eb3664e50f689 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_c75afb90594359ea2dd03a9e6cebbbb6 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_068d606300b4841a4e3483603ab89a70 = $(`<div id="html_068d606300b4841a4e3483603ab89a70" style="width: 100.0%; height: 100.0%;"><b>Killochyett</b><br>Origin: Scottish Gaelic<br>Reason: The place name Killochyett appears to have Gaelic origins, with 'Kill-' (from 'cill') being a common Gaelic prefix meaning 'church' or 'cell'. The middle element '-loch-' likely derives from Gaelic 'loch' meaning 'lake' or 'inlet'. The '-yett' ending could be from Scots 'yett' meaning 'gate', suggesting a compound formation with later linguistic influence. The overall structure suggests a hybrid name describing a church or religious settlement near a loch, possibly with a gate, though without the historic county context, the precise interpretation remains somewhat uncertain.</div>`)[0];
+                popup_c75afb90594359ea2dd03a9e6cebbbb6.setContent(html_068d606300b4841a4e3483603ab89a70);
+            
+        
+
+        marker_b005e4e6bb008f06a7db817037391745.bindPopup(popup_c75afb90594359ea2dd03a9e6cebbbb6)
+        ;
+
+        
+    
+    
+                marker_b005e4e6bb008f06a7db817037391745.setIcon(icon_e5984b12f3cbd155319eb3664e50f689);
+            
+    
+            var marker_c0aadf656d47dcf74576f429ee222e93 = L.marker(
+                [57.595262, -4.425329],
+                {
+}
+            ).addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var icon_0f587c61384288e61f0d93956811553f = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_5d2d4481d8f8bcbf3b05153556275a19 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_213ce3e4deefa36987aaa7e1efd7ac82 = $(`<div id="html_213ce3e4deefa36987aaa7e1efd7ac82" style="width: 100.0%; height: 100.0%;"><b>Dingwall</b><br>Origin: Norse<br>Reason: Dingwall comes from Old Norse 'Þingvǫllr' meaning 'field/meadow (vǫllr) of the thing/assembly (þing)'. This was a significant Norse settlement where the Thing (Norse assembly or parliament) was held. The first element 'Ding-' is a direct derivation from Old Norse 'þing', while '-wall' comes from Old Norse 'vǫllr'. The preservation of this name indicates the strong Norse influence in northern Scotland, particularly in areas that were under Norse control. The location in Ross-shire was an important administrative center during the Norse period, which supports this etymology.</div>`)[0];
+                popup_5d2d4481d8f8bcbf3b05153556275a19.setContent(html_213ce3e4deefa36987aaa7e1efd7ac82);
+            
+        
+
+        marker_c0aadf656d47dcf74576f429ee222e93.bindPopup(popup_5d2d4481d8f8bcbf3b05153556275a19)
+        ;
+
+        
+    
+    
+                marker_c0aadf656d47dcf74576f429ee222e93.setIcon(icon_0f587c61384288e61f0d93956811553f);
+            
+    
+            var marker_fe600491ee72f4c0acaf3e270c9889b2 = L.marker(
+                [57.000027, -7.421983],
+                {
+}
+            ).addTo(map_7373e9819760df17f5908dcbc713619c);
+        
+    
+            var icon_fc7aff3b1b8c9371774d879e53b842d5 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_3422b39188b3a2049f01562218f1c225 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_ff5a28a653cd226731190522168b00d4 = $(`<div id="html_ff5a28a653cd226731190522168b00d4" style="width: 100.0%; height: 100.0%;"><b>Bayherivagh</b><br>Origin: Norse<br>Reason: Bayherivagh appears to be of Norse origin, particularly due to the suffix '-vagh' which is likely derived from Old Norse 'vagr' meaning bay or inlet. This suffix is commonly found in Norse place names in Scotland, particularly in the Northern Isles and Hebrides. The first element 'Bayher-' is less clear but could be a compound of Norse elements that have been phonetically altered over time. The structure of the name as a compound with a topographical suffix is typical of Norse naming patterns in coastal Scotland.</div>`)[0];
+                popup_3422b39188b3a2049f01562218f1c225.setContent(html_ff5a28a653cd226731190522168b00d4);
+            
+        
+
+        marker_fe600491ee72f4c0acaf3e270c9889b2.bindPopup(popup_3422b39188b3a2049f01562218f1c225)
+        ;
+
+        
+    
+    
+                marker_fe600491ee72f4c0acaf3e270c9889b2.setIcon(icon_fc7aff3b1b8c9371774d879e53b842d5);
+            
+</script>
+</html>
