@@ -73,7 +73,7 @@ origin_chain = (
     | RunnableLambda(lambda response: response.model_dump())
 )
 
-def process_place_name(place_name: str, historic_county: str) -> tuple[str, str]:
+def process_place_name(place_name: str, historic_county: str) -> tuple[str, str, str]:
     """Runs the LLM pipeline for a given place name and county.
     
     Args:
@@ -81,7 +81,7 @@ def process_place_name(place_name: str, historic_county: str) -> tuple[str, str]
         historic_county: The historic county for context
         
     Returns:
-        Tuple of (origin, reason)
+        Tuple of (origin, reason, confidence)
     """
     try:
         result = origin_chain.invoke({
@@ -135,13 +135,14 @@ def save_map(df: pd.DataFrame, output_path: str = "output/topollm_map.html") -> 
     # Add legend
     legend_html = '''
     <div style="position: fixed; 
-                bottom: 50px; left: 50px; width: 150px; height: 180px; 
-                background-color: white; border:2px solid grey; z-index:9999; 
-                font-size:14px; padding: 10px">
-    <p><b>Place Name Origins</b></p>
+                bottom: 20px; left: 20px; width: 200px; height: 220px; 
+                background-color: white; border: 2px solid #333; border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index:9999; 
+                font-family: Arial, sans-serif; font-size: 14px; padding: 15px;">
+    <h4 style="margin: 0 0 12px 0; color: #333; font-size: 16px; text-align: center;">Place Name Origins</h4>
     '''
     for origin, color in ORIGIN_COLORS.items():
-        legend_html += f'<p><i class="fa fa-circle" style="color:{color}"></i> {origin}</p>'
+        legend_html += f'<div style="margin: 8px 0; display: flex; align-items: center;"><i class="fa fa-circle" style="color:{color}; margin-right: 8px; font-size: 12px;"></i><span style="color: #333;">{origin}</span></div>'
     legend_html += '</div>'
     
     m.get_root().html.add_child(folium.Element(legend_html))
@@ -180,7 +181,7 @@ def main(sample_size: int = 100, input_file: str = "data/IPN_GB_2024.csv",
         
         # Sample data for processing
         if len(df) > sample_size:
-            df = df.sample(sample_size, random_state=42)  # Set seed for reproducibility
+            df = df.sample(sample_size, random_state=42).reset_index(drop=True)  # Reset index after sampling
             logging.info(f"Sampling {sample_size} places from {len(df)} available")
         
         # Process place names with progress bar
@@ -190,7 +191,10 @@ def main(sample_size: int = 100, input_file: str = "data/IPN_GB_2024.csv",
             result = process_place_name(row['placesort'], row['cty23nm'])
             results.append(result)
         
-        df[['origin', 'reason', 'confidence']] = pd.DataFrame(results)
+        # Assign results back to df - make sure indices align
+        df.reset_index(drop=True, inplace=True)
+        results_df = pd.DataFrame(results, columns=['origin', 'reason', 'confidence'])
+        df[['origin', 'reason', 'confidence']] = results_df[['origin', 'reason', 'confidence']]
         
         # Create output directory if it doesn't exist
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
