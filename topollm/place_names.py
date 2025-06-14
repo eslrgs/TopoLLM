@@ -10,6 +10,11 @@ from langchain.schema.runnable import RunnableLambda
 from pydantic import BaseModel, Field
 from typing import Literal
 import logging
+import asyncio
+from tqdm.asyncio import tqdm as atqdm
+import time
+import random
+import click
 
 # Load environment variables
 load_dotenv()
@@ -33,8 +38,16 @@ class PlaceNameOriginResponse(BaseModel):
         description="Short explanation including linguistic elements, etymology, and historical context that support your classification",
     )
 
-# Create output parser
+class BatchPlaceNameResponse(BaseModel):
+    """Pydantic model for batch responses from the LLM."""
+    analyses: list[PlaceNameOriginResponse] = Field(
+        ...,
+        description="List of place name analyses in the same order as input"
+    )
+
+# Create output parsers
 parser = PydanticOutputParser(pydantic_object=PlaceNameOriginResponse)
+batch_parser = PydanticOutputParser(pydantic_object=BatchPlaceNameResponse)
 
 # Define the prompt
 prompt = PromptTemplate(
@@ -73,6 +86,41 @@ origin_chain = (
     | RunnableLambda(lambda response: response.model_dump())
 )
 
+# Define batch prompt for multiple place names
+batch_prompt = PromptTemplate(
+    template="""
+    You are a leading expert in Scottish toponymy with deep knowledge of Celtic, Germanic, and Romance linguistic influences on place names.
+    
+    Analyze these Scottish place names for their linguistic origins. For each place name, consider:
+    
+    Place Names and Counties:
+    {place_list}
+    
+    Linguistic patterns to consider:
+    - Scottish Gaelic: prefixes like 'bal-', 'inver-', 'glen-', 'dun-', 'craig-'; suffixes like '-more', '-beg'
+    - Norse: elements like '-by', '-thorp', '-wick', '-dale', '-fell', '-force'
+    - Brittonic/Welsh: 'llan-', 'aber-', 'pen-', 'tre-', 'caer-'
+    - Scots: Germanic/Anglo-Saxon elements, often phonetically altered
+    - English: Standard English toponymic elements
+    
+    Historical context: Consider geographic location, settlement patterns, and linguistic layering.
+    
+    Provide analysis for each place name in the exact same order as listed above.
+    
+    {format_instructions}
+    """,
+    input_variables=["place_list"],
+    partial_variables={"format_instructions": batch_parser.get_format_instructions()},
+)
+
+# Define batch processing pipeline
+batch_chain = (
+    batch_prompt
+    | llm
+    | batch_parser
+    | RunnableLambda(lambda response: response.model_dump())
+)
+
 def process_place_name(place_name: str, historic_county: str) -> tuple[str, str, str]:
     """Runs the LLM pipeline for a given place name and county.
     
@@ -94,6 +142,121 @@ def process_place_name(place_name: str, historic_county: str) -> tuple[str, str,
     except Exception as e:
         logging.error(f"Error processing {place_name}: {str(e)}")
         return "Error", str(e), "Low"
+
+async def process_place_name_async(place_name: str, historic_county: str, semaphore: asyncio.Semaphore) -> tuple[str, str, str]:
+    """Async version of process_place_name with concurrency control.
+    
+    Args:
+        place_name: The name of the place to analyze
+        historic_county: The historic county for context
+        semaphore: Semaphore to limit concurrent requests
+        
+    Returns:
+        Tuple of (origin, reason, confidence)
+    """
+    async with semaphore:
+        try:
+            # Run the sync chain in an executor to make it async
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(None, lambda: origin_chain.invoke({
+                'place_name': place_name,
+                'historic_county': historic_county
+            }))
+            return (result["origin"], result["reason"], 
+                    result.get("confidence", "Low"))
+        except Exception as e:
+            logging.error(f"Error processing {place_name}: {str(e)}")
+            return "Error", str(e), "Low"
+
+def process_batch_with_retry(places_batch: list[tuple[str, str]], max_retries: int = 3) -> list[tuple[str, str, str]]:
+    """Process a batch of place names with exponential backoff for rate limiting.
+    
+    Args:
+        places_batch: List of (place_name, historic_county) tuples
+        max_retries: Maximum number of retry attempts
+        
+    Returns:
+        List of tuples containing (origin, reason, confidence)
+    """
+    for attempt in range(max_retries + 1):
+        try:
+            # Format place list for prompt
+            place_list = "\n".join([f"- {name} (County: {county})" for name, county in places_batch])
+            
+            result = batch_chain.invoke({"place_list": place_list})
+            analyses = result["analyses"]
+            
+            # Convert to expected format
+            return [(analysis["origin"], analysis["reason"], analysis["confidence"]) 
+                    for analysis in analyses]
+                    
+        except Exception as e:
+            error_msg = str(e).lower()
+            
+            # Check if it's a rate limit error
+            if "rate" in error_msg or "429" in error_msg or "limit" in error_msg:
+                if attempt < max_retries:
+                    # Exponential backoff with jitter
+                    delay = (2 ** attempt) + random.uniform(0, 1)
+                    logging.warning(f"Rate limit hit, retrying in {delay:.1f}s (attempt {attempt + 1})")
+                    time.sleep(delay)
+                    continue
+                else:
+                    logging.error(f"Rate limit exceeded after {max_retries} retries")
+            else:
+                logging.error(f"Error processing batch: {str(e)}")
+                break
+    
+    # Return error results for the entire batch
+    return [("Error", str(e), "Low")] * len(places_batch)
+
+async def process_batch_async(places_batch: list[tuple[str, str]], semaphore: asyncio.Semaphore) -> list[tuple[str, str, str]]:
+    """Process a batch of place names asynchronously with rate limiting.
+    
+    Args:
+        places_batch: List of (place_name, historic_county) tuples
+        semaphore: Semaphore to limit concurrent requests
+        
+    Returns:
+        List of tuples containing (origin, reason, confidence)
+    """
+    async with semaphore:
+        # Add small delay between requests to be respectful to API
+        await asyncio.sleep(random.uniform(0.1, 0.3))
+        
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, process_batch_with_retry, places_batch)
+
+async def process_places_async(df: pd.DataFrame, max_concurrent: int = 3, batch_size: int = 3) -> list[tuple[str, str, str]]:
+    """Process all place names asynchronously with batching and concurrency control.
+    
+    Args:
+        df: DataFrame with place names to process
+        max_concurrent: Maximum number of concurrent API requests
+        batch_size: Number of place names to process per API call
+        
+    Returns:
+        List of tuples containing (origin, reason, confidence)
+    """
+    # Create semaphore to limit concurrent requests
+    semaphore = asyncio.Semaphore(max_concurrent)
+    
+    # Create batches of place names
+    places = [(row['placesort'], row['cty23nm']) for _, row in df.iterrows()]
+    batches = [places[i:i + batch_size] for i in range(0, len(places), batch_size)]
+    
+    # Create tasks for all batches
+    tasks = [process_batch_async(batch, semaphore) for batch in batches]
+    
+    # Run all tasks concurrently with progress bar
+    batch_results = await atqdm.gather(*tasks, desc="Analyzing batches")
+    
+    # Flatten results
+    results = []
+    for batch_result in batch_results:
+        results.extend(batch_result)
+    
+    return results
     
 def save_map(df: pd.DataFrame, output_path: str = "output/topollm_map.html") -> None:
     """Saves a map with markers for each place.
@@ -132,17 +295,35 @@ def save_map(df: pd.DataFrame, output_path: str = "output/topollm_map.html") -> 
             icon=folium.Icon(color=get_marker_color(row["origin"]))
         ).add_to(m)
 
-    # Add legend
+    # Add legend with proper sizing for all items
     legend_html = '''
     <div style="position: fixed; 
-                bottom: 20px; left: 20px; width: 200px; height: 220px; 
+                bottom: 20px; left: 20px; width: 220px; height: 260px; 
                 background-color: white; border: 2px solid #333; border-radius: 8px;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index:9999; 
-                font-family: Arial, sans-serif; font-size: 14px; padding: 15px;">
-    <h4 style="margin: 0 0 12px 0; color: #333; font-size: 16px; text-align: center;">Place Name Origins</h4>
+                font-family: Arial, sans-serif; font-size: 14px; padding: 15px;
+                overflow: hidden;">
+    <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px; text-align: center; font-weight: bold;">Place Name Origins</h4>
     '''
-    for origin, color in ORIGIN_COLORS.items():
-        legend_html += f'<div style="margin: 8px 0; display: flex; align-items: center;"><i class="fa fa-circle" style="color:{color}; margin-right: 8px; font-size: 12px;"></i><span style="color: #333;">{origin}</span></div>'
+    
+    # Ensure consistent ordering and include all origins
+    ordered_origins = [
+        ("Scottish Gaelic", "green"),
+        ("Norse", "red"), 
+        ("Scots", "blue"),
+        ("English", "purple"),
+        ("Brittonic", "black"),
+        ("Unsure", "orange"),
+        ("Error", "gray")
+    ]
+    
+    for origin, color in ordered_origins:
+        legend_html += f'''
+        <div style="margin: 6px 0; display: flex; align-items: center; line-height: 1.2;">
+            <i class="fa fa-circle" style="color:{color}; margin-right: 10px; font-size: 12px; min-width: 12px;"></i>
+            <span style="color: #333; font-size: 13px;">{origin}</span>
+        </div>'''
+    
     legend_html += '</div>'
     
     m.get_root().html.add_child(folium.Element(legend_html))
@@ -151,8 +332,8 @@ def save_map(df: pd.DataFrame, output_path: str = "output/topollm_map.html") -> 
     m.save(output_path)
     logging.info(f"Map saved to {output_path}")
 
-def main(sample_size: int = 100, input_file: str = "data/IPN_GB_2024.csv", 
-         output_file: str = "output/IPN_GB_2024_origin.csv") -> None:
+def main(sample_size: int = 1000, input_file: str = "data/IPN_GB_2024.csv", 
+         output_file: str = "output/IPN_GB_2024_origin_async.csv") -> None:
     """Loads data, processes it, and saves results.
     
     Args:
@@ -184,12 +365,9 @@ def main(sample_size: int = 100, input_file: str = "data/IPN_GB_2024.csv",
             df = df.sample(sample_size, random_state=42).reset_index(drop=True)  # Reset index after sampling
             logging.info(f"Sampling {sample_size} places from {len(df)} available")
         
-        # Process place names with progress bar
-        logging.info("Processing place names...")
-        results = []
-        for _, row in tqdm(df.iterrows(), total=len(df), desc="Analyzing origins"):
-            result = process_place_name(row['placesort'], row['cty23nm'])
-            results.append(result)
+        # Process place names with async concurrency
+        logging.info("Processing place names with concurrent requests...")
+        results = asyncio.run(process_places_async(df))
         
         # Assign results back to df - make sure indices align
         df.reset_index(drop=True, inplace=True)
@@ -217,5 +395,71 @@ def main(sample_size: int = 100, input_file: str = "data/IPN_GB_2024.csv",
         logging.error(f"Error in main processing: {str(e)}")
         raise
 
+def create_map_from_csv(csv_file: str = "output/IPN_GB_2024_origin_async.csv", 
+                       output_path: str = "output/topollm_map.html") -> None:
+    """Create map HTML from existing CSV file with origin data.
+    
+    Args:
+        csv_file: Path to CSV file with origin, reason, confidence columns
+        output_path: Path to save the map HTML file
+    """
+    try:
+        # Load the CSV file
+        logging.info(f"Loading data from {csv_file}")
+        df = pd.read_csv(csv_file)
+        
+        # Check if required columns exist
+        required_cols = ['lat', 'long', 'place23nm', 'origin', 'reason']
+        missing_cols = [col for col in required_cols if col not in df.columns]
+        if missing_cols:
+            raise ValueError(f"Missing required columns: {missing_cols}")
+        
+        # Filter out rows with missing coordinates or invalid data
+        df = df.dropna(subset=['lat', 'long', 'origin', 'reason'])
+        df = df[(df['origin'] != '') & (df['reason'] != '')]
+        
+        if df.empty:
+            logging.error("No valid data found in CSV file")
+            return
+            
+        logging.info(f"Creating map with {len(df)} places")
+        
+        # Create and save the map
+        save_map(df, output_path)
+        
+        # Print summary statistics
+        origin_counts = df['origin'].value_counts()
+        logging.info(f"Map creation complete. Origin distribution:")
+        for origin, count in origin_counts.items():
+            logging.info(f"  {origin}: {count}")
+            
+        logging.info(f"Map saved to {output_path}")
+        
+    except FileNotFoundError:
+        logging.error(f"CSV file {csv_file} not found")
+    except Exception as e:
+        logging.error(f"Error creating map from CSV: {str(e)}")
+        raise
+
+@click.group()
+def cli():
+    """TopoLLM - Scottish place name linguistic origin analysis."""
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+@cli.command()
+@click.option('--sample-size', default=1000, help='Number of places to process')
+@click.option('--input-file', default='data/IPN_GB_2024.csv', help='Path to input CSV file')
+@click.option('--output-file', default='output/IPN_GB_2024_origin_async.csv', help='Path to output CSV file')
+def analyze(sample_size, input_file, output_file):
+    """Analyze place names and save results."""
+    main(sample_size, input_file, output_file)
+
+@cli.command()
+@click.option('--csv-file', default='output/IPN_GB_2024_origin_async.csv', help='Path to CSV file with origin data')
+@click.option('--output-path', default='output/topollm_map.html', help='Path to save the map HTML file')
+def create_map(csv_file, output_path):
+    """Create interactive map from existing CSV file."""
+    create_map_from_csv(csv_file, output_path)
+
 if __name__ == "__main__":
-    main()
+    cli()
