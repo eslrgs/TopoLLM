@@ -20,7 +20,7 @@ import click
 load_dotenv()
 
 # Initialize Anthropic model
-llm = ChatAnthropic(model="claude-3-5-sonnet-20241022")
+llm = ChatAnthropic(model="claude-sonnet-4-20250514")
 
 # Define the Pydantic Model
 class PlaceNameOriginResponse(BaseModel):
@@ -333,7 +333,7 @@ def save_map(df: pd.DataFrame, output_path: str = "output/topollm_map.html") -> 
     logging.info(f"Map saved to {output_path}")
 
 def main(sample_size: int = 1000, input_file: str = "data/IPN_GB_2024.csv", 
-         output_file: str = "output/IPN_GB_2024_origin_async.csv") -> None:
+         output_file: str = "output/IPN_GB_2024_origin_sonnet.csv") -> None:
     """Loads data, processes it, and saves results.
     
     Args:
@@ -395,7 +395,7 @@ def main(sample_size: int = 1000, input_file: str = "data/IPN_GB_2024.csv",
         logging.error(f"Error in main processing: {str(e)}")
         raise
 
-def create_map_from_csv(csv_file: str = "output/IPN_GB_2024_origin_async.csv", 
+def create_map_from_csv(csv_file: str = "output/IPN_GB_2024_origin_sonnet4.csv", 
                        output_path: str = "output/topollm_map.html") -> None:
     """Create map HTML from existing CSV file with origin data.
     
@@ -449,13 +449,13 @@ def cli():
 @cli.command()
 @click.option('--sample-size', default=1000, help='Number of places to process')
 @click.option('--input-file', default='data/IPN_GB_2024.csv', help='Path to input CSV file')
-@click.option('--output-file', default='output/IPN_GB_2024_origin_async.csv', help='Path to output CSV file')
-def analyze(sample_size, input_file, output_file):
+@click.option('--output-file', default='output/IPN_GB_2024_origin_sonnet4.csv', help='Path to output CSV file')
+def analyse(sample_size, input_file, output_file):
     """Analyze place names and save results."""
     main(sample_size, input_file, output_file)
 
 @cli.command()
-@click.option('--csv-file', default='output/IPN_GB_2024_origin_async.csv', help='Path to CSV file with origin data')
+@click.option('--csv-file', default='output/IPN_GB_2024_origin_sonnet4.csv', help='Path to CSV file with origin data')
 @click.option('--output-path', default='output/topollm_map.html', help='Path to save the map HTML file')
 def create_map(csv_file, output_path):
     """Create interactive map from existing CSV file."""
